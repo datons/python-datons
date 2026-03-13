@@ -9,9 +9,9 @@ Endpoints:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
-import pandas as pd
+import polars as pl
 
 from datons.esios.models import (
     DimensionResult,
@@ -25,6 +25,8 @@ if TYPE_CHECKING:
 
 API_PREFIX = "/esios-data"
 
+Backend = Literal["polars", "pandas"]
+
 
 class EsiosDataManager:
     """Manager for ESIOS preprocessed data.
@@ -35,11 +37,14 @@ class EsiosDataManager:
 
         client = Client(token="esd_live_...")
 
-        # SQL query → DataFrame
+        # SQL query → Polars DataFrame (default)
         df = client.esios.query(
             "SELECT unit, datetime, energy FROM operational_data_15min "
-            "WHERE program='PDBF' AND date >= '2025-01-01' LIMIT 100"
+            "WHERE program='PDBF' LIMIT 100"
         )
+
+        # SQL query → pandas DataFrame
+        df = client.esios.query("SELECT ...", backend="pandas")
 
         # Metadata (schema, programs, stats)
         meta = client.esios.metadata()
@@ -54,16 +59,24 @@ class EsiosDataManager:
     def __init__(self, client: Client):
         self._client = client
 
-    def query(self, sql: str, *, limit: int | None = None) -> pd.DataFrame:
+    def query(
+        self,
+        sql: str,
+        *,
+        limit: int | None = None,
+        backend: Backend = "polars",
+    ) -> Any:
         """Execute a read-only SQL query and return a DataFrame.
 
         Args:
             sql: SQL SELECT query against ``operational_data_15min``.
             limit: Max rows to return. Server enforces 50 for raw queries,
                 10000 for aggregated queries.
+            backend: DataFrame backend — ``"polars"`` (default) or ``"pandas"``.
+                Pandas requires ``pip install datons[pandas]``.
 
         Returns:
-            pandas DataFrame with the query results.
+            Polars or pandas DataFrame with the query results.
 
         Raises:
             QueryError: On invalid SQL, timeout, or write attempt.
@@ -74,7 +87,10 @@ class EsiosDataManager:
 
         data = self._client.post(f"{API_PREFIX}/query", json=body)
         result = QueryResult.model_validate(data)
-        return self._to_dataframe(result)
+
+        if backend == "pandas":
+            return self._to_pandas(result)
+        return self._to_polars(result)
 
     def query_raw(self, sql: str, *, limit: int | None = None) -> QueryResult:
         """Execute a query and return the raw API response (no DataFrame conversion).
@@ -168,12 +184,42 @@ class EsiosDataManager:
     # -- Internal helpers ------------------------------------------------------
 
     @staticmethod
-    def _to_dataframe(result: QueryResult) -> pd.DataFrame:
+    def _to_polars(result: QueryResult) -> pl.DataFrame:
+        """Convert a QueryResult to a Polars DataFrame."""
+        col_names = [c.name for c in result.columns]
+        schema: dict[str, pl.DataType] = {}
+
+        for col in result.columns:
+            col_type = col.type.lower()
+            if "datetime" in col_type:
+                schema[col.name] = pl.Datetime("ms")
+            elif "date" in col_type:
+                schema[col.name] = pl.Date
+            elif "float" in col_type:
+                schema[col.name] = pl.Float64
+            elif "int" in col_type or "uint" in col_type:
+                schema[col.name] = pl.Int64
+            else:
+                schema[col.name] = pl.Utf8
+
+        data = dict(zip(col_names, zip(*result.rows))) if result.rows else {c: [] for c in col_names}
+        df = pl.DataFrame(data, schema=schema)
+        return df
+
+    @staticmethod
+    def _to_pandas(result: QueryResult) -> Any:
         """Convert a QueryResult to a pandas DataFrame."""
+        try:
+            import pandas as pd
+        except ImportError:
+            raise ImportError(
+                "pandas is required for backend='pandas'. "
+                "Install it with: pip install datons[pandas]"
+            ) from None
+
         col_names = [c.name for c in result.columns]
         df = pd.DataFrame(result.rows, columns=col_names)
 
-        # Auto-parse datetime columns
         for col in result.columns:
             if "datetime" in col.type.lower() or "date" in col.type.lower():
                 try:
