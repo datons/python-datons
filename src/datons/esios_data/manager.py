@@ -1,0 +1,187 @@
+"""ESIOS Data manager — preprocessed I90 market data from ClickHouse.
+
+Endpoints:
+    /esios-data/metadata  — schema, programs, global stats
+    /esios-data/query     — read-only SQL queries
+    /esios-data/search    — fuzzy search across dimensions
+    /esios-data/dimensions — unit/company/technology lookups
+"""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Literal
+
+import pandas as pd
+
+from datons.esios_data.models import (
+    DimensionResult,
+    MetadataResult,
+    QueryResult,
+    SearchResult,
+)
+
+if TYPE_CHECKING:
+    from datons.client import Client
+
+API_PREFIX = "/esios-data"
+
+
+class EsiosDataManager:
+    """Manager for ESIOS preprocessed data.
+
+    Usage::
+
+        from datons import Client
+
+        client = Client(token="esd_live_...")
+
+        # SQL query → DataFrame
+        df = client.esios_data.query(
+            "SELECT unit, datetime, energy FROM operational_data_15min "
+            "WHERE program='PDBF' AND date >= '2025-01-01' LIMIT 100"
+        )
+
+        # Metadata (schema, programs, stats)
+        meta = client.esios_data.metadata()
+
+        # Search for dimension values
+        results = client.esios_data.search("iberdrola")
+
+        # Dimension lookup
+        techs = client.esios_data.dimensions("technology")
+    """
+
+    def __init__(self, client: Client):
+        self._client = client
+
+    def query(self, sql: str, *, limit: int | None = None) -> pd.DataFrame:
+        """Execute a read-only SQL query and return a DataFrame.
+
+        Args:
+            sql: SQL SELECT query against ``operational_data_15min``.
+            limit: Max rows to return. Server enforces 50 for raw queries,
+                10000 for aggregated queries.
+
+        Returns:
+            pandas DataFrame with the query results.
+
+        Raises:
+            QueryError: On invalid SQL, timeout, or write attempt.
+        """
+        body: dict = {"sql": sql}
+        if limit is not None:
+            body["limit"] = limit
+
+        data = self._client.post(f"{API_PREFIX}/query", json=body)
+        result = QueryResult.model_validate(data)
+        return self._to_dataframe(result)
+
+    def query_raw(self, sql: str, *, limit: int | None = None) -> QueryResult:
+        """Execute a query and return the raw API response (no DataFrame conversion).
+
+        Useful when you need metadata (query_type, truncated, max_rows_applied)
+        or want to handle the data yourself.
+        """
+        body: dict = {"sql": sql}
+        if limit is not None:
+            body["limit"] = limit
+
+        data = self._client.post(f"{API_PREFIX}/query", json=body)
+        return QueryResult.model_validate(data)
+
+    def metadata(
+        self,
+        *,
+        lang: Literal["en", "es"] = "en",
+        detail: Literal["summary", "full"] = "summary",
+    ) -> MetadataResult:
+        """Get dataset metadata: schema, programs, and global statistics.
+
+        Args:
+            lang: Language for column descriptions ('en' or 'es').
+            detail: 'summary' for lightweight overview (~2.7K tokens),
+                'full' for complete stats + categorical values (~5.7K tokens).
+        """
+        data = self._client.get(
+            f"{API_PREFIX}/metadata",
+            params={"lang": lang, "detail": detail},
+        )
+        return MetadataResult.model_validate(data)
+
+    def search(
+        self,
+        q: str,
+        *,
+        column: str | None = None,
+    ) -> SearchResult:
+        """Fuzzy search across all metadata dimensions.
+
+        Searches unit codes, unit names, company names, technologies,
+        and other categorical values.
+
+        Args:
+            q: Search query (case-insensitive substring match).
+            column: Optional column to limit search to.
+
+        Examples::
+
+            client.esios_data.search("iber")      # → Iberdrola units/companies
+            client.esios_data.search("ciclo")      # → Ciclo Combinado technology
+            client.esios_data.search("CTGN")       # → unit codes CTGN1, CTGN2...
+        """
+        params: dict = {"q": q}
+        if column:
+            params["column"] = column
+
+        data = self._client.get(f"{API_PREFIX}/search", params=params)
+        return SearchResult.model_validate(data)
+
+    def dimensions(
+        self,
+        dim: Literal["unit", "company", "technology"] = "unit",
+        *,
+        detail: Literal["summary", "full"] = "summary",
+        q: str | None = None,
+    ) -> DimensionResult:
+        """Get dimension values (unit registry, companies, technologies).
+
+        Args:
+            dim: Dimension to query.
+            detail: 'summary' for flat list, 'full' for enriched records.
+            q: Optional fuzzy filter.
+        """
+        params: dict = {"dim": dim, "detail": detail}
+        if q:
+            params["q"] = q
+
+        data = self._client.get(f"{API_PREFIX}/dimensions", params=params)
+        return DimensionResult.model_validate(data)
+
+    def health(self) -> bool:
+        """Check if the ESIOS Data API is reachable."""
+        try:
+            data = self._client.get(f"{API_PREFIX}/health")
+            return data.get("status") == "ok"
+        except Exception:
+            return False
+
+    # -- Internal helpers ------------------------------------------------------
+
+    @staticmethod
+    def _to_dataframe(result: QueryResult) -> pd.DataFrame:
+        """Convert a QueryResult to a pandas DataFrame."""
+        col_names = [c.name for c in result.columns]
+        df = pd.DataFrame(result.rows, columns=col_names)
+
+        # Auto-parse datetime columns
+        for col in result.columns:
+            if "datetime" in col.type.lower() or "date" in col.type.lower():
+                try:
+                    df[col.name] = pd.to_datetime(df[col.name])
+                except Exception:
+                    pass
+
+        return df
+
+    def __repr__(self) -> str:
+        return f"EsiosDataManager(base_url='{self._client.base_url}{API_PREFIX}')"

@@ -1,0 +1,31 @@
+"""Datons client exceptions."""
+
+
+class DatonsError(Exception):
+    """Base exception for all Datons client errors."""
+
+
+class AuthenticationError(DatonsError):
+    """Invalid or missing API key."""
+
+    def __init__(self, message: str = "Invalid or missing API key."):
+        super().__init__(message)
+
+
+class QueryError(DatonsError):
+    """Query execution failed (bad SQL, timeout, read-only violation, etc.)."""
+
+    def __init__(self, status_code: int, detail: str = ""):
+        self.status_code = status_code
+        super().__init__(f"Query error ({status_code}): {detail}")
+
+
+class RateLimitError(DatonsError):
+    """Rate limit exceeded."""
+
+    def __init__(self, retry_after: int | None = None):
+        self.retry_after = retry_after
+        msg = "Rate limit exceeded."
+        if retry_after:
+            msg += f" Retry after {retry_after}s."
+        super().__init__(msg)
