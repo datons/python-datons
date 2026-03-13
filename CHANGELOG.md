@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/datons/python-datons/compare/datons-v0.2.0...datons-v0.3.0) (2026-03-13)
+
+
+### Features
+
+* rename esios_data module to esios for cleaner API ([dfe56d7](https://github.com/datons/python-datons/commit/dfe56d7aa3eb8cb59c5d4892317bcb77f49939d1))
+
 ## [0.2.0](https://github.com/datons/python-datons/compare/datons-v0.1.0...datons-v0.2.0) (2026-03-13)
 
 
