@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/datons/python-datons/compare/datons-v0.3.0...datons-v0.4.0) (2026-03-13)
+
+
+### Features
+
+* switch default DataFrame backend to Polars ([53bded5](https://github.com/datons/python-datons/commit/53bded5049d7169f76c26604b82a48b2838373b4))
+
 ## [0.3.0](https://github.com/datons/python-datons/compare/datons-v0.2.0...datons-v0.3.0) (2026-03-13)
 
 
