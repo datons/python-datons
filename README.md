@@ -16,7 +16,7 @@ from datons import Client
 client = Client(token="esd_live_...")
 
 # Query preprocessed I90 market data
-df = client.esios_data.query(
+df = client.esios.query(
     "SELECT unit, datetime, energy, price "
     "FROM operational_data_15min "
     "WHERE program = 'PDBF' AND date >= '2025-01-01' "
@@ -24,10 +24,10 @@ df = client.esios_data.query(
 )
 
 # Dataset metadata (schema, programs, stats)
-meta = client.esios_data.metadata()
+meta = client.esios.metadata()
 
 # Search for units, companies, technologies
-results = client.esios_data.search("iberdrola")
+results = client.esios.search("iberdrola")
 ```
 
 ## Authentication

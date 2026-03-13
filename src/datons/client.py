@@ -24,12 +24,12 @@ class Client:
         from datons import Client
 
         client = Client(token="esd_live_...")
-        df = client.esios_data.query("SELECT unit, energy FROM operational_data_15min WHERE program='PDBF' LIMIT 10")
+        df = client.esios.query("SELECT unit, energy FROM operational_data_15min WHERE program='PDBF' LIMIT 10")
 
     Or with context manager::
 
         with Client(token="esd_live_...") as client:
-            df = client.esios_data.query("SELECT ...")
+            df = client.esios.query("SELECT ...")
     """
 
     def __init__(
@@ -58,16 +58,16 @@ class Client:
         )
 
         # Lazy-initialized managers
-        self._esios_data: Any = None
+        self._esios: Any = None
 
     @property
-    def esios_data(self):
+    def esios(self):
         """Access ESIOS preprocessed data (I90, market programs)."""
-        if self._esios_data is None:
-            from datons.esios_data.manager import EsiosDataManager
+        if self._esios is None:
+            from datons.esios.manager import EsiosDataManager
 
-            self._esios_data = EsiosDataManager(self)
-        return self._esios_data
+            self._esios = EsiosDataManager(self)
+        return self._esios
 
     # -- HTTP primitives (used by managers) ------------------------------------
 

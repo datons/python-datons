@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Literal
 
 import pandas as pd
 
-from datons.esios_data.models import (
+from datons.esios.models import (
     DimensionResult,
     MetadataResult,
     QueryResult,
@@ -36,19 +36,19 @@ class EsiosDataManager:
         client = Client(token="esd_live_...")
 
         # SQL query → DataFrame
-        df = client.esios_data.query(
+        df = client.esios.query(
             "SELECT unit, datetime, energy FROM operational_data_15min "
             "WHERE program='PDBF' AND date >= '2025-01-01' LIMIT 100"
         )
 
         # Metadata (schema, programs, stats)
-        meta = client.esios_data.metadata()
+        meta = client.esios.metadata()
 
         # Search for dimension values
-        results = client.esios_data.search("iberdrola")
+        results = client.esios.search("iberdrola")
 
         # Dimension lookup
-        techs = client.esios_data.dimensions("technology")
+        techs = client.esios.dimensions("technology")
     """
 
     def __init__(self, client: Client):
@@ -125,9 +125,9 @@ class EsiosDataManager:
 
         Examples::
 
-            client.esios_data.search("iber")      # → Iberdrola units/companies
-            client.esios_data.search("ciclo")      # → Ciclo Combinado technology
-            client.esios_data.search("CTGN")       # → unit codes CTGN1, CTGN2...
+            client.esios.search("iber")      # → Iberdrola units/companies
+            client.esios.search("ciclo")      # → Ciclo Combinado technology
+            client.esios.search("CTGN")       # → unit codes CTGN1, CTGN2...
         """
         params: dict = {"q": q}
         if column:

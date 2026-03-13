@@ -5,7 +5,7 @@ Python client for Datons data APIs (`pip install datons`).
 ## Structure
 
 - `src/datons/client.py` — Central `Client` with shared auth and HTTP
-- `src/datons/esios_data/` — ESIOS preprocessed data manager (first product)
+- `src/datons/esios/` — ESIOS preprocessed data manager (first product)
 - Future products go in `src/datons/<product_name>/`
 
 ## Running tests

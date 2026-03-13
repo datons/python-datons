@@ -31,10 +31,10 @@ def test_client_context_manager():
         assert client.token == "esd_test_abc123"
 
 
-def test_esios_data_manager_lazy_init():
+def test_esios_manager_lazy_init():
     """EsiosDataManager is lazily initialized on first access."""
     client = Client(token="esd_test_abc123")
-    assert client._esios_data is None
-    _ = client.esios_data
-    assert client._esios_data is not None
+    assert client._esios is None
+    _ = client.esios
+    assert client._esios is not None
     client.close()

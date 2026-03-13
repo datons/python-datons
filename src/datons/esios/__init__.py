@@ -1,7 +1,7 @@
 """ESIOS Data — preprocessed Spanish electricity market data from ClickHouse."""
 
-from datons.esios_data.manager import EsiosDataManager
-from datons.esios_data.models import (
+from datons.esios.manager import EsiosDataManager
+from datons.esios.models import (
     ColumnInfo,
     DimensionResult,
     MetadataResult,
