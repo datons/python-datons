@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/datons/python-datons/compare/datons-v0.4.0...datons-v0.5.0) (2026-04-06)
+
+
+### Features
+
+* parse structured 429 responses for descriptive rate limit errors ([dd16711](https://github.com/datons/python-datons/commit/dd167115ae0df59d802ea14be9827b4ec7050ef3))
+
 ## [0.4.0](https://github.com/datons/python-datons/compare/datons-v0.3.0...datons-v0.4.0) (2026-03-13)
 
 
