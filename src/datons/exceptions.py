@@ -21,11 +21,34 @@ class QueryError(DatonsError):
 
 
 class RateLimitError(DatonsError):
-    """Rate limit exceeded."""
+    """Rate limit exceeded.
 
-    def __init__(self, retry_after: int | None = None):
+    Attributes:
+        retry_after: Seconds until the limit resets.
+        tier: Current API key tier (e.g. 'explorer', 'professional').
+        detail: Full error detail from the server.
+    """
+
+    def __init__(
+        self,
+        retry_after: int | None = None,
+        *,
+        tier: str | None = None,
+        detail: dict | str | None = None,
+    ):
         self.retry_after = retry_after
-        msg = "Rate limit exceeded."
-        if retry_after:
-            msg += f" Retry after {retry_after}s."
+        self.tier = tier
+        self.detail = detail
+
+        # Build a human-readable message from the server response
+        if isinstance(detail, dict):
+            msg = detail.get("error", "Rate limit exceeded.")
+            upgrade = detail.get("upgrade")
+            if upgrade:
+                msg += f" {upgrade}"
+        else:
+            msg = "Rate limit exceeded."
+            if retry_after:
+                msg += f" Retry after {retry_after}s."
+
         super().__init__(msg)

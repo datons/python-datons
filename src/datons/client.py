@@ -98,7 +98,18 @@ class Client:
             raise AuthenticationError()
         if response.status_code == 429:
             retry_after = response.headers.get("Retry-After")
-            raise RateLimitError(int(retry_after) if retry_after else None)
+            # Parse structured error body from server
+            try:
+                body = response.json()
+                detail = body.get("detail", body)
+            except Exception:
+                detail = None
+            tier = detail.get("tier") if isinstance(detail, dict) else None
+            raise RateLimitError(
+                int(retry_after) if retry_after else None,
+                tier=tier,
+                detail=detail,
+            )
         if response.status_code >= 400:
             detail = response.text[:500]
             raise QueryError(response.status_code, detail)
