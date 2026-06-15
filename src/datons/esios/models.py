@@ -96,11 +96,19 @@ class QueryResult(BaseModel):
 
 
 class SearchResult(BaseModel):
-    """Search response."""
+    """Search response.
+
+    Shape as returned by ``/esios-data/search`` (May 2026 backend):
+    ``{query, count, results, hints, offset}``. ``results`` is a list of
+    matching records (dimension rows or domain-catalog entries depending on
+    the params sent).
+    """
 
     query: str
-    matches: dict[str, list[str]]
-    total_matches: int
+    count: int = 0
+    results: list[dict] = []
+    hints: list[str] | None = None
+    offset: int = 0
 
 
 class DimensionResult(BaseModel):

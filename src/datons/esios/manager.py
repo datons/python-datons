@@ -39,7 +39,7 @@ class EsiosDataManager:
 
         # SQL query → Polars DataFrame (default)
         df = client.esios.query(
-            "SELECT unit, datetime, energy FROM operational_data_15min "
+            "SELECT unit, datetime, energy FROM esios.archives_i90 "
             "WHERE program='PDBF' LIMIT 100"
         )
 
@@ -69,7 +69,8 @@ class EsiosDataManager:
         """Execute a read-only SQL query and return a DataFrame.
 
         Args:
-            sql: SQL SELECT query against ``operational_data_15min``.
+            sql: SQL SELECT query against ``esios.archives_i90`` (per-program
+                I90 dispatch) or ``esios.indicators`` (time series).
             limit: Max rows to return. Server enforces 50 for raw queries,
                 10000 for aggregated queries.
             backend: DataFrame backend — ``"polars"`` (default) or ``"pandas"``.
