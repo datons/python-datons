@@ -5,16 +5,14 @@ import pytest
 from datons import Client, DatonsError
 
 
-def test_client_requires_token():
-    """Client raises if no token provided and env var not set."""
-    import os
-    env_key = os.environ.pop("DATONS_API_KEY", None)
-    try:
-        with pytest.raises(DatonsError, match="API key required"):
-            Client()
-    finally:
-        if env_key:
-            os.environ["DATONS_API_KEY"] = env_key
+def test_client_requires_token(monkeypatch):
+    """Client raises if no token provided, env var unset, and no saved config key."""
+    monkeypatch.delenv("DATONS_API_KEY", raising=False)
+    # Neutralize the ~/.config/datons/config.toml fallback so the test is
+    # hermetic regardless of the developer's machine.
+    monkeypatch.setattr("datons.config.read_api_key", lambda: None)
+    with pytest.raises(DatonsError, match="API key required"):
+        Client()
 
 
 def test_client_accepts_token():

@@ -24,7 +24,7 @@ class Client:
         from datons import Client
 
         client = Client(token="esd_live_...")
-        df = client.esios.query("SELECT unit, energy FROM operational_data_15min WHERE program='PDBF' LIMIT 10")
+        df = client.esios.query("SELECT unit, energy FROM esios.archives_i90 WHERE program='PDBF' LIMIT 10")
 
     Or with context manager::
 
@@ -41,8 +41,13 @@ class Client:
     ):
         self.token = token or os.getenv("DATONS_API_KEY")
         if not self.token:
+            from datons.config import read_api_key
+
+            self.token = read_api_key()
+        if not self.token:
             raise DatonsError(
-                "API key required. Pass token= or set DATONS_API_KEY env var."
+                "API key required. Pass token=, set DATONS_API_KEY env var, "
+                "or run: datons auth set <KEY>"
             )
 
         self.base_url = base_url.rstrip("/")
