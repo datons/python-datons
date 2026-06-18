@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.0](https://github.com/datons/python-datons/compare/datons-v0.5.0...datons-v0.6.0) (2026-06-18)
+
+
+### Features
+
+* **auth:** add config-file API key store + datons auth CLI ([2ddb4f2](https://github.com/datons/python-datons/commit/2ddb4f2b204b1eedc3a3c3130b2b6d4a7c983e42))
+
+
+### Bug Fixes
+
+* default API base URL to api.datons.com ([e5cc6ed](https://github.com/datons/python-datons/commit/e5cc6ed51255df8b9ef93afd74fcbf9d2124ea09))
+* **esios:** correct SearchResult model and refresh renamed table names ([f3349ae](https://github.com/datons/python-datons/commit/f3349ae58af8aa972cbfd344631ce0c31e7bccc5))
+
 ## [0.5.0](https://github.com/datons/python-datons/compare/datons-v0.4.0...datons-v0.5.0) (2026-04-06)
 
 
