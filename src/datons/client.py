@@ -12,7 +12,7 @@ import httpx
 
 from datons.exceptions import AuthenticationError, DatonsError, QueryError, RateLimitError
 
-DEFAULT_BASE_URL = "https://mcp.datons.com"
+DEFAULT_BASE_URL = "https://api.datons.com"
 DEFAULT_TIMEOUT = 30.0
 
 
