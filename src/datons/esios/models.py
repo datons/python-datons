@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ColumnInfo(BaseModel):
@@ -98,7 +100,7 @@ class QueryResult(BaseModel):
 class SearchResult(BaseModel):
     """Search response.
 
-    Shape as returned by ``/esios-data/search`` (May 2026 backend):
+    Shape as returned by the legacy indicator-only ``GET /esios/search`` endpoint:
     ``{query, count, results, hints, offset}``. ``results`` is a list of
     matching records (dimension rows or domain-catalog entries depending on
     the params sent).
@@ -106,7 +108,7 @@ class SearchResult(BaseModel):
 
     query: str
     count: int = 0
-    results: list[dict] = []
+    results: list[dict] = Field(default_factory=list)
     hints: list[str] | None = None
     offset: int = 0
 
@@ -117,5 +119,29 @@ class DimensionResult(BaseModel):
     dimension: str = ""
     detail: str = ""
     count: int = 0
-    values: list[str] = []
-    records: list[dict] = []
+    values: list[str] = Field(default_factory=list)
+    records: list[dict] = Field(default_factory=list)
+
+
+class StatusResult(BaseModel):
+    """Authenticated access tier and query limits."""
+
+    model_config = ConfigDict(extra="allow")
+
+    tier: str
+    display_name: str
+    rate_limits: dict[str, Any]
+    query_limits: dict[str, Any]
+    restrictions: dict[str, Any]
+    available_tables: list[str]
+    getting_started: dict[str, Any]
+    freshness: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class FeedbackResult(BaseModel):
+    """Acknowledgement returned by the shared feedback sink."""
+
+    status: str
+    category: str
+    recorded_for: str | None = None
+    detail: str | None = None

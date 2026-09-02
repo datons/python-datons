@@ -32,7 +32,7 @@ results = client.esios.search("iberdrola")
 
 ## Authentication
 
-Get your API key at [datons.com/apps/esios-data](https://datons.com/apps/esios-data).
+Get your API key at [datons.com/apps/esios](https://datons.com/apps/esios).
 
 Pass it directly or set the `DATONS_API_KEY` environment variable:
 

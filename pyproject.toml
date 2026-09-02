@@ -39,7 +39,7 @@ datons = "datons.cli:main"
 
 [project.urls]
 Homepage = "https://datons.com"
-Documentation = "https://datons.com/apps/esios-data/docs"
+Documentation = "https://datons.com/apps/esios/docs"
 Repository = "https://github.com/datons/python-datons"
 Issues = "https://github.com/datons/python-datons/issues"
 
