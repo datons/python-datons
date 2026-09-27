@@ -1,4 +1,4 @@
-"""Datons API client.
+"""Joltio API client.
 
 Central entry point that lazily initializes product-specific managers.
 """
@@ -10,44 +10,44 @@ from typing import Any
 
 import httpx
 
-from datons.exceptions import AuthenticationError, DatonsError, QueryError, RateLimitError
+from joltio.exceptions import AuthenticationError, DatonsError, QueryError, RateLimitError
 
-DEFAULT_BASE_URL = "https://api.datons.com"
+DEFAULT_BASE_URL = "https://api.joltio.app"
 DEFAULT_TIMEOUT = 30.0
 
 
 class Client:
-    """Client for Datons data APIs.
+    """Client for Joltio Data APIs.
 
     Usage::
 
-        from datons import Client
+        from joltio import Client
 
-        client = Client(token="esd_live_...")
-        df = client.esios.query("SELECT unit, energy FROM esios.archives_i90 WHERE program='PDBF' LIMIT 10")
+        client = Client(api_key="jol_live_...")
+        df = client.data.query("SELECT unit, energy FROM esios.archives_i90 WHERE program='PDBF' LIMIT 10")
 
     Or with context manager::
 
-        with Client(token="esd_live_...") as client:
-            df = client.esios.query("SELECT ...")
+        with Client(api_key="jol_live_...") as client:
+            df = client.data.query("SELECT ...")
     """
 
     def __init__(
         self,
-        token: str | None = None,
+        api_key: str | None = None,
         *,
+        token: str | None = None,
         base_url: str = DEFAULT_BASE_URL,
         timeout: float = DEFAULT_TIMEOUT,
     ):
-        self.token = token or os.getenv("DATONS_API_KEY")
+        self.token = api_key or token or os.getenv("JOLTIO_API_KEY") or os.getenv("DATONS_API_KEY")
         if not self.token:
-            from datons.config import read_api_key
+            from joltio.config import read_api_key
 
             self.token = read_api_key()
         if not self.token:
             raise DatonsError(
-                "API key required. Pass token=, set DATONS_API_KEY env var, "
-                "or run: datons auth set <KEY>"
+                "API key required. Pass api_key=, set JOLTIO_API_KEY, or run: joltio auth set <KEY>"
             )
 
         self.base_url = base_url.rstrip("/")
@@ -57,7 +57,7 @@ class Client:
             base_url=self.base_url,
             headers={
                 "X-API-Key": self.token,
-                "User-Agent": "python-datons/0.1.0",
+                "User-Agent": "python-joltio/0.1.0",
             },
             timeout=self.timeout,
         )
@@ -66,10 +66,14 @@ class Client:
         self._esios: Any = None
 
     @property
+    def data(self):
+        return self.esios
+
+    @property
     def esios(self):
         """Access ESIOS preprocessed data (I90, market programs)."""
         if self._esios is None:
-            from datons.esios.manager import EsiosDataManager
+            from joltio.esios.manager import EsiosDataManager
 
             self._esios = EsiosDataManager(self)
         return self._esios

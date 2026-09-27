@@ -1,10 +1,10 @@
 """ESIOS Data manager — preprocessed I90 market data from ClickHouse.
 
 Endpoints:
-    /esios-data/metadata  — schema, programs, global stats
-    /esios-data/query     — read-only SQL queries
-    /esios-data/search    — fuzzy search across dimensions
-    /esios-data/dimensions — unit/company/technology lookups
+    /data/metadata  — schema, programs, global stats
+    /data/query     — read-only SQL queries
+    /data/search    — fuzzy search across dimensions
+    /data/dimensions — unit/company/technology lookups
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import polars as pl
 
-from datons.esios.models import (
+from joltio.esios.models import (
     DimensionResult,
     MetadataResult,
     QueryResult,
@@ -21,9 +21,9 @@ from datons.esios.models import (
 )
 
 if TYPE_CHECKING:
-    from datons.client import Client
+    from joltio.client import Client
 
-API_PREFIX = "/esios-data"
+API_PREFIX = "/data"
 
 Backend = Literal["polars", "pandas"]
 
@@ -33,7 +33,7 @@ class EsiosDataManager:
 
     Usage::
 
-        from datons import Client
+        from joltio import Client
 
         client = Client(token="esd_live_...")
 
@@ -74,7 +74,7 @@ class EsiosDataManager:
             limit: Max rows to return. Server enforces 50 for raw queries,
                 10000 for aggregated queries.
             backend: DataFrame backend — ``"polars"`` (default) or ``"pandas"``.
-                Pandas requires ``pip install datons[pandas]``.
+                Pandas requires ``pip install joltio[pandas]``.
 
         Returns:
             Polars or pandas DataFrame with the query results.
@@ -182,6 +182,9 @@ class EsiosDataManager:
         except Exception:
             return False
 
+    def coverage(self, table: str | None = None) -> list[dict]:
+        return self._client.get(f"{API_PREFIX}/coverage", params={"table": table} if table else None)
+
     # -- Internal helpers ------------------------------------------------------
 
     @staticmethod
@@ -215,7 +218,7 @@ class EsiosDataManager:
         except ImportError:
             raise ImportError(
                 "pandas is required for backend='pandas'. "
-                "Install it with: pip install datons[pandas]"
+                "Install it with: pip install joltio[pandas]"
             ) from None
 
         col_names = [c.name for c in result.columns]

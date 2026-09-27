@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "datons"
-version = "0.6.0"
-description = "Python client for Datons data APIs"
+name = "joltio"
+version = "0.1.0"
+description = "Python client for Joltio Data"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
@@ -35,20 +35,20 @@ dependencies = [
 pandas = ["pandas>=2.0"]
 
 [project.scripts]
-datons = "datons.cli:main"
+joltio = "joltio.cli:main"
 
 [project.urls]
-Homepage = "https://datons.com"
-Documentation = "https://datons.com/apps/esios-data/docs"
+Homepage = "https://joltio.app/data"
+Documentation = "https://joltio.app/data/docs"
 Repository = "https://github.com/datons/python-datons"
 Issues = "https://github.com/datons/python-datons/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/datons"]
+packages = ["src/joltio"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["src", "shim/src"]
 
 [dependency-groups]
 dev = [

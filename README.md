@@ -1,47 +1,47 @@
-# datons
+# joltio
 
-Python client for [Datons](https://datons.com) data APIs.
+Python client for [Joltio Data](https://joltio.app/data). The canonical endpoint is `https://api.joltio.app/data`; existing Datons clients remain available through the compatibility distribution in `shim/`.
 
 ## Installation
 
 ```bash
-pip install datons
+pip install joltio
 ```
 
 ## Quick start
 
 ```python
-from datons import Client
+from joltio import Client
 
-client = Client(token="esd_live_...")
+client = Client(api_key="jol_live_...")
 
-# Query preprocessed I90 market data
-df = client.esios.query(
-    "SELECT unit, datetime, energy, price "
-    "FROM operational_data_15min "
-    "WHERE program = 'PDBF' AND date >= '2025-01-01' "
+# Query the electricity market clearing price
+df = client.data.query(
+    "SELECT datetime, price "
+    "FROM omie.prices "
+    "WHERE country = 'ES' AND datetime >= now() - INTERVAL 7 DAY "
     "LIMIT 100"
 )
 
 # Dataset metadata (schema, programs, stats)
-meta = client.esios.metadata()
+meta = client.data.metadata()
 
 # Search for units, companies, technologies
-results = client.esios.search("iberdrola")
+results = client.data.search("iberdrola")
 ```
 
 ## Authentication
 
-Get your API key at [datons.com/apps/esios-data](https://datons.com/apps/esios-data).
+Create your member key in [Joltio Data](https://joltio.app/panel/data/keys).
 
-Pass it directly or set the `DATONS_API_KEY` environment variable:
+Pass it directly or set `JOLTIO_API_KEY`. `DATONS_API_KEY` remains a fallback during migration.
 
 ```bash
-export DATONS_API_KEY="esd_live_..."
+export JOLTIO_API_KEY="jol_live_..."
 ```
 
 ```python
-from datons import Client
+from joltio import Client
 
-client = Client()  # picks up DATONS_API_KEY
+client = Client()  # picks up JOLTIO_API_KEY
 ```

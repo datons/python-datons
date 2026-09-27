@@ -1,9 +1,10 @@
-"""Datons — Python client for Datons data APIs."""
+"""Joltio — Python client for Joltio Data."""
 
-from datons.client import Client
-from datons.exceptions import (
+from joltio.client import Client
+from joltio.exceptions import (
     AuthenticationError,
     DatonsError,
+    JoltioError,
     QueryError,
     RateLimitError,
 )
@@ -12,6 +13,7 @@ __all__ = [
     "Client",
     "AuthenticationError",
     "DatonsError",
+    "JoltioError",
     "QueryError",
     "RateLimitError",
 ]

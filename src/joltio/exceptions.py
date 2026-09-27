@@ -1,8 +1,11 @@
-"""Datons client exceptions."""
+"""Joltio client exceptions, including the legacy DatonsError alias."""
 
 
-class DatonsError(Exception):
-    """Base exception for all Datons client errors."""
+class JoltioError(Exception):
+    """Base exception for all Joltio client errors."""
+
+
+DatonsError = JoltioError
 
 
 class AuthenticationError(DatonsError):
