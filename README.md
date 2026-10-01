@@ -1,6 +1,6 @@
 # joltio
 
-The `joltio` client and CLI are maintained in [the Joltio monorepo](https://gitlab.com/datons.com/products/joltio) under `toolkit/`. This branch preserves the 0.1.0 source for reference and no longer publishes `joltio` to PyPI. Install current releases from PyPI and submit changes to the Joltio monorepo. Existing Datons clients remain available through the compatibility distribution in `shim/`.
+The `joltio` client and CLI moved to their own public, read-only mirror: [datons/python-joltio](https://github.com/datons/python-joltio), which receives a snapshot of every release published to PyPI. This branch preserves the 0.1.0 source for reference and no longer publishes `joltio`. Install current releases with `pip install joltio`; for issues, contact https://joltio.app/contact.
 
 ## Installation
 
