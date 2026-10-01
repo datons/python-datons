@@ -1,6 +1,6 @@
 # joltio
 
-Python client for [Joltio Data](https://joltio.app/data). The canonical endpoint is `https://api.joltio.app/data`; existing Datons clients remain available through the compatibility distribution in `shim/`.
+The `joltio` client and CLI are maintained in [the Joltio monorepo](https://gitlab.com/datons.com/products/joltio) under `toolkit/`. This branch preserves the 0.1.0 source for reference and no longer publishes `joltio` to PyPI. Install current releases from PyPI and submit changes to the Joltio monorepo. Existing Datons clients remain available through the compatibility distribution in `shim/`.
 
 ## Installation
 
